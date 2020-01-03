@@ -15,6 +15,7 @@ Python command line tool for conversion between android strings.xml files and ex
 
 python 版本必须是 3.x
 
+安装python3.6为例:
 ```
 $ sudo add-apt-repository ppa:jonathonf/python-3.6
 $ sudo apt-get update
@@ -22,6 +23,7 @@ $ sudo apt-get install python3.6
 $ python3 --version
 Python 3.6.3
 ```
+如果已经安装了python3.x其他版本，以下几个安装步骤也是一样
 
 ### 2.检查 pip3(python3 包管理器)
 
