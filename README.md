@@ -4,8 +4,8 @@ Python command line tool for conversion between android strings.xml files and ex
 
 ## 特性
 
-- [x] 支持将 **android** xml 文件转换成 **excel** 文件
-- [x] 支持将 **excel** 文件转换成 **android** xml 文件
+- [x] 支持将 **android strings** xml 文件转换成 **excel** 文件
+- [x] 支持将 **excel** 文件转换成 **android strings** xml 文件
 
 ## 所需环境
 
@@ -63,11 +63,11 @@ sudo pip3 install lxml
 ```
 
 ## 使用说明
-### 1.将 **android** xml 文件转换成 **excel** 文件
+### 1.将 **android strings** xml 文件转换成 **excel** 文件
 
 
 
-### 2.将 **excel** 文件转换成 **android** xml 文件
+### 2.将 **excel** 文件转换成 **android strings** xml 文件
 
 
 
