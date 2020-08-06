@@ -76,7 +76,7 @@ def add_parser():
 def convert_to_xml(file_dir, target_dir):
     dest_dir = target_dir + "/xls2xml/" + time.strftime("%Y%m%d_%H%M%S")
     for _, _, file_names in os.walk(file_dir):
-        xls_file_names = [fi for fi in file_names if fi.endswith(".xls")]
+        xls_file_names = [fi for fi in file_names if fi.endswith(".xls") or fi.endswith(".xlsx")]
         for file in xls_file_names:
             data = xlrd.open_workbook(file_dir + "/" + file, 'utf-8')
             sheet = data.sheets()
@@ -132,6 +132,8 @@ def start_convert(options):
 def main():
     options = add_parser()
     start_convert(options)
+
+    # convert_to_xml("/Users/shewenbiao/Desktop/xls2xml", os.getcwd())
 
 
 main()
