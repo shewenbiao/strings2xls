@@ -42,7 +42,7 @@ def read_from_excel(file_path):
 def write_to_xml(keys, values, file_path, language_name):
     fo = open(file_path, "wb")
     string_encoding = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<resources>\n"
-    fo.write(bytes(string_encoding, encoding="utf8"))
+    fo.write(bytes(string_encoding, encoding="utf-8"))
     for x in range(len(keys)):
         if values[x] is None or values[x] == '':
             Log().error("Language: " + language_name + " Key:" + keys[x] + " value is None. Index:" + str(x + 1))
@@ -51,8 +51,8 @@ def write_to_xml(keys, values, file_path, language_name):
         # value = re.sub(r'(%\d\$)(@)', r'\1s', str(values[x]))
         value = str(values[x])
         content = "    <string name=\"" + key + "\">" + value + "</string>\n"
-        fo.write(bytes(content, encoding="utf8"))
-    fo.write(bytes("</resources>", encoding="utf8"))
+        fo.write(bytes(content, encoding="utf-8"))
+    fo.write(bytes("</resources>", encoding="utf-8"))
     fo.close()
 
 
