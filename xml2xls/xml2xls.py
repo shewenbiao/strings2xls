@@ -15,6 +15,14 @@ from bs4 import BeautifulSoup
 
 
 def read_xml(path):
+    """通过ElementTree获取
+
+    大部分字符串内容都能读取出来，但是如果<string></string>标签内嵌套了子标签，
+    那么子标签内的内容读取不出来，并且只能读取到第一个子标签前的内容
+
+    :param path:
+    :return:
+    """
     if path is None or len(path) == 0:
         Log().error('file path is None')
         return
@@ -23,6 +31,9 @@ def read_xml(path):
     string_list = file.read()
     root = ElementTree.fromstringlist(string_list)
     item_list = root.findall('string')
+
+    print('Total: %s' % len(item_list))
+
     keys = []
     values = []
     for item in item_list:
@@ -35,6 +46,15 @@ def read_xml(path):
 
 
 def read_xml2(path):
+    """通过DOM获取
+
+    如果<string></string>标签内紧跟着子标签, 比如<string><font></font></string>
+    ，则会报错，提示item.firstChild.data这句话没有data属性;
+    如果<string></string>标签内先是内容然后跟着子标签，则会读取第一个子标签前的内容
+
+    :param path:
+    :return:
+    """
     if path is None or len(path) == 0:
         Log().error('file path is None')
         return
@@ -42,6 +62,8 @@ def read_xml2(path):
     dom = xml.dom.minidom.parse(path)
     root = dom.documentElement
     item_list = root.getElementsByTagName('string')
+
+    print('Total: %s' % len(item_list))
 
     keys = []
     values = []
@@ -55,13 +77,24 @@ def read_xml2(path):
 
 
 def read_xml3(path):
+    """通过BeautifulSoup获取
+
+    如果<string></string>标签内含子标签，则子标签内的内容也可读取出来，
+    注意：如果使用的是BeautifulSoup(file, 'xml')，则文件里的数据会出现读取不全的情况，可能只读取了几个<string></string>内的数据
+
+    :param path:
+    :return:
+    """
     if path is None or len(path) == 0:
         Log().error('file path is None')
         return None, None
 
     file = open(path)
-    soup = BeautifulSoup(file, 'xml')
+    soup = BeautifulSoup(file, 'lxml')
     strings = soup.findAll('string')
+
+    print('Total: %s' % len(strings))
+
     keys = []
     values = []
     for string in strings:
@@ -150,6 +183,9 @@ def convert_to_single_file_with_one_sheet(file_dir, target_dir):
                 if not os.path.exists(xml_file_path):
                     continue
                 country_code = get_country_code(dir_name)
+
+                print("Start Converting %s " % country_code)
+
                 ws.write(0, index + 1, country_code)
                 (keys, values) = read_xml3(xml_file_path)
                 if country_code == 'en':
@@ -240,6 +276,9 @@ def convert_to_multiple_files_no_translate(file_dir, target_dir):
 
 
 def add_parser():
+    # usage = "xml2xls.py -f fileDir -t targetDir -e excelStorageForm"
+    # parser = OptionParser(usage=usage)
+
     parser = OptionParser()
 
     parser.add_option("-f", "--fileDir",
@@ -255,8 +294,8 @@ def add_parser():
                       default="1",
                       help="The excel(.xls) file storage forms including single file with one sheet(-e 1), single file "
                            "with multiple sheet(-e 2), multiple files(-e 3), multiple files with untranslated(-e 4), "
-                           "or above all(-e 5) "
-                           "default is single file with one sheet(-e 1).",
+                           "or above all(-e 5). "
+                           "Default is single file with one sheet(-e 1).",
                       metavar="excelStorageForm")
 
     (options, args) = parser.parse_args()
