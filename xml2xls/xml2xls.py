@@ -31,9 +31,6 @@ def read_xml(path):
     string_list = file.read()
     root = ElementTree.fromstringlist(string_list)
     item_list = root.findall('string')
-
-    print('Total: %s' % len(item_list))
-
     keys = []
     values = []
     for item in item_list:
@@ -62,9 +59,6 @@ def read_xml2(path):
     dom = xml.dom.minidom.parse(path)
     root = dom.documentElement
     item_list = root.getElementsByTagName('string')
-
-    print('Total: %s' % len(item_list))
-
     keys = []
     values = []
     for index in range(len(item_list)):
@@ -92,9 +86,6 @@ def read_xml3(path):
     file = open(path)
     soup = BeautifulSoup(file, 'lxml')
     strings = soup.findAll('string')
-
-    print('Total: %s' % len(strings))
-
     keys = []
     values = []
     for string in strings:
@@ -155,6 +146,10 @@ def convert_to_multiple_files(file_dir, target_dir):
                 ws.write(0, 1, country_code)
                 path = file_dir + '/' + dir_name + '/' + xml_file
                 (keys, values) = read_xml3(path)
+
+                print("Start Converting %s " % country_code)
+                print('Total: %s' % len(keys))
+
                 for x in range(len(keys)):
                     key = keys[x]
                     value = values[x]
@@ -183,11 +178,12 @@ def convert_to_single_file_with_one_sheet(file_dir, target_dir):
                 if not os.path.exists(xml_file_path):
                     continue
                 country_code = get_country_code(dir_name)
-
-                print("Start Converting %s " % country_code)
-
                 ws.write(0, index + 1, country_code)
                 (keys, values) = read_xml3(xml_file_path)
+
+                print("Start Converting %s " % country_code)
+                print('Total: %s' % len(keys))
+
                 if country_code == 'en':
                     en_keys = keys
                     for x in range(len(keys)):
@@ -227,6 +223,10 @@ def convert_to_single_file_with_multiple_sheets(file_dir, target_dir):
                 ws.write(0, 1, country_code)
                 path = file_dir + '/' + dirname + '/' + xml_file
                 (keys, values) = read_xml3(path)
+
+                print('Start Converting %s' % country_code)
+                print('Total: %s' % len(keys))
+
                 for x in range(len(keys)):
                     key = keys[x]
                     value = values[x]
@@ -255,6 +255,10 @@ def convert_to_multiple_files_no_translate(file_dir, target_dir):
                 en_keys = keys
                 en_values = values
             else:
+
+                print("Start converting %s" % country_code)
+                print('Translated Count: %s' % len(keys))
+
                 file_name = xml_file.replace(".xml", "_no_translate_to_" + country_code)
                 sheet_name = file_name
                 dest_file_path = dest_dir + "/" + file_name + ".xls"
@@ -272,6 +276,7 @@ def convert_to_multiple_files_no_translate(file_dir, target_dir):
                             ws.write(index + 1, 1, value)
                             index += 1
                     workbook.save(dest_file_path)
+                    print("Untranslated Count: %s" % index)
                     print("Convert %s successfully! you can see xls file in %s" % (path, dest_dir))
 
 
