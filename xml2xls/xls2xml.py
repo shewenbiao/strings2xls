@@ -102,7 +102,7 @@ def convert_to_xml(file_dir, target_dir):
                         os.makedirs(path)
                     filename = 'strings.xml'
                     write_to_xml(keys, values, path + filename, language_name)
-    print("Convert %s successfully! you can xml files in %s" % (
+    print("Convert %s successfully! you can see xml files in %s" % (
         file_dir, dest_dir))
 
 
