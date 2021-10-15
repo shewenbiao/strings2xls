@@ -92,7 +92,7 @@ def read_xml3(path):
     for string in strings:
         key = string.get('name')
         # value = string.string 如果包含多个子标签， 结果返回None
-        keyname = r'<string name="'+key+r'">(.*?)</string>'
+        keyname = r'<string.*?name="'+key+r'.*?">(.*?)</string>'
         # value = del_content_blank(keyname,string.gette().strip())
         value = del_content_blank(keyname, string)
         keys.append(key)
@@ -103,9 +103,15 @@ def read_xml3(path):
 
 def del_content_blank(name, value):
     # clean_str = re.sub(r'\n| {8}', ' ', str(value))
-    clean_str = re.findall(name, str(value).replace('\n', ''))[0]
-    clean_str.replace('&gt', "")
-    return clean_str.replace('  ', ' ')
+    text_list = re.findall(name, str(value).replace('\n', ''))
+    # print(text_list)
+    if len(text_list) == 0:
+        print(name+'error')
+        return ''
+    else:
+        clean_str = text_list[0]
+        clean_str.replace('&gt', "")
+        return clean_str.replace('  ', ' ')
 
 
 def get_country_code(dir_name):
@@ -323,7 +329,7 @@ def add_parser():
 def start_convert(options):
     file_dir = options.fileDir
     target_dir = options.targetDir
-    
+
     if file_dir is None:
         Log().error("strings.xml files directory can not be empty! try -h for help.")
         return
