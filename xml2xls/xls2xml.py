@@ -50,7 +50,7 @@ def write_to_xml(keys, values, file_path, language_name):
         key = keys[x].strip()
         # value = re.sub(r'(%\d\$)(@)', r'\1s', str(values[x]))
         value = str(values[x])
-        content = "    <string name=\"" + key + "\">" + value + "</string>\n"
+        content = "    <string name=\"" + key + "\">" + value.strip() + "</string>\n"
         fo.write(bytes(content, encoding="utf-8"))
     fo.write(bytes("</resources>", encoding="utf-8"))
     fo.close()

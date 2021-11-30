@@ -62,6 +62,11 @@ $ sudo pip3 install beautifulsoup4
 $ sudo pip3 install lxml
 ```
 
+### 7.关于```<CDATA>```
+
+在使用```beatifulsoup4```配合```lxml```解析 XML 文件的时候，发现‘<Data>’标签中含带的```<CDATA>```标签内容无法解析出来，所以拉取分支 ```HTML_PARSER```，
+使用python 自带的HTML解释器。```lxml```是目前性能与容错率都绝佳的XML解析工具，所以XML文件还是推荐使用它来解析。该分支为解决特殊问题存在，仅修改解释器。
+
 ## 使用说明
 ### 1.将 **android strings** xml 文件转换成 **excel** 文件
 
