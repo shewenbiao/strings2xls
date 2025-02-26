@@ -1,6 +1,38 @@
 # strings2xls
-Python command line tool for conversion between android strings.xml files and excel files.Reference https://github.com/CatchZeng/Localizable.strings2Excel 基于该链接里的基础上做了改善，以及扩展。
+Python command line tool for conversion between android strings.xml files and excel files.
 
+## 最新脚本(更新日期：2025/02/26)：processor.py
+
+### Change log:
+1. 该脚本使用起来更方便。导出和导入使用这一个脚本即可。
+2. 解决了老版本中一些因字符串内容包含特殊标签（比如 Html 标签）导致导出到表格中特殊标签缺失，或者内容缺失的问题。
+3. 该脚本导出到表格包含两部分：一部分是将全部语言下的字符串导出到一个 sheet, 另外一部分是默认语言下的字符串在其他语言下未翻译的部分会输出到各个 sheet 中，即每个 sheet 里的数据是那些在对应语言中没有翻译，仍然使用默认英文的内容。
+
+### 使用：
+1. 导出 strings.xml 中的内容到 Excel 表格
+```
+python3 processor.py --export res_dir translations.xlsx
+```
+2. 将 Excel 表格中的内容导入到 strings.xml
+```
+python3 processor.py --import res_dir translations.xlsx
+```
+   
+
+### 参数说明
+positional arguments:
+  1. res_dir     资源目录路径（直接指定 Android 项目下的 res 目录路径）
+  2. excel_file  Excel文件路径
+
+options:
+  1. -h, --help  show this help message and exit
+  2. --export    导出到Excel
+  3. --import    从Excel导入
+
+### 安装 openpyxl
+```
+pip3 install openpyxl
+```
 
 ## 特性
 
