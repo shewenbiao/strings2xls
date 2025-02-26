@@ -120,8 +120,18 @@ def write_strings_xml(xml_path, data):
     """写入XML时保留原始格式"""
     os.makedirs(os.path.dirname(xml_path), exist_ok=True)
 
+    # 检测是否需要 xliff 命名空间
+    has_xliff = any(re.search(r'<xliff:', str(v)) for v in data.values())
+
+    # 构建XML头
     with open(xml_path, 'w', encoding='utf-8') as f:
-        f.write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n')
+        # 添加命名空间声明
+        ns_decl = ''
+        if has_xliff:
+            ns_decl = ' xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2"'
+
+        f.write(f'<?xml version="1.0" encoding="utf-8"?>\n')
+        f.write(f'<resources{ns_decl}>\n')
 
         for name, value in data.items():
             line = f'    <string name="{name}">{value}</string>'
