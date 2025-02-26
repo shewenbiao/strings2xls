@@ -131,8 +131,8 @@ def write_strings_xml(xml_path, data):
 
 
 """
-导出 strings.xml 中的内容到 Excel 表格：python3 processor.py --import res_dir translations.xlsx
-将 Excel 表格中的内容导入到 strings.xml：python3 processor.py --export res_dir translations.xlsx
+导出 strings.xml 中的内容到 Excel 表格：python3 processor.py --export res_dir translations.xlsx
+将 Excel 表格中的内容导入到 strings.xml：python3 processor.py --import res_dir translations.xlsx
 
 positional arguments:
   res_dir     资源目录路径
