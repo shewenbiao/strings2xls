@@ -28,7 +28,7 @@ python3 processor.py --import res_dir excel_file --mode [full|partial]
    python3 processor.py --import app/src/main/res translations.xlsx --mode full
    ```
 
-3. 仅导入未翻译项表（Untranslated）数据：
+3. 仅导入未翻译表（Untranslated）数据：
    ```
    python3 processor.py --import app/src/main/res translations.xlsx --mode partial
    ```
