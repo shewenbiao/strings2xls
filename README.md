@@ -1,33 +1,56 @@
 # strings2xls
 Python command line tool for conversion between android strings.xml files and excel files.
 
-## 最新脚本(更新日期：2025/02/26)：processor.py
+## 最新脚本(更新日期：2025/03/13)：processor.py
 
-### Change log:
+### Change log
 1. 该脚本使用起来更方便。导出和导入使用这一个脚本即可。
 2. 解决了老版本中一些因字符串内容包含特殊标签（比如 Html 标签）导致导出到表格中特殊标签缺失，或者内容缺失的问题。
-3. 该脚本导出到表格包含两部分：一部分是将全部语言下的字符串导出到一个 sheet, 另外一部分是默认语言下的字符串在其他语言下未翻译的部分会输出到各个 sheet 中，即每个 sheet 里的数据是那些在对应语言中没有翻译，仍然使用默认英文的内容。
+3. 该脚本导出到表格包含两部分：一部分是将全部语言下的字符串导出到一个 sheet（All Translations）, 另外一部分是所有未翻译的字符串会放到一个 sheet（Untranslated）中。
 
-### 使用：
+### 命令
 1. 导出 strings.xml 中的内容到 Excel 表格
 ```
-python3 processor.py --export res_dir translations.xlsx
+python3 processor.py --export res_dir excel_file
 ```
 2. 将 Excel 表格中的内容导入到 strings.xml
 ```
-python3 processor.py --import res_dir translations.xlsx
+python3 processor.py --import res_dir excel_file --mode [full|partial]
 ```
+### 使用示例
+1. 导出所有翻译（含未翻译项）：
+   ```
+   python3 processor.py --export app/src/main/res translations.xlsx
+   ```
+
+2. 导入完整翻译表（All Translations）数据：
+   ```
+   python3 processor.py --import app/src/main/res translations.xlsx --mode full
+   ```
+
+3. 仅导入未翻译项表（Untranslated）数据：
+   ```
+   python3 processor.py --import app/src/main/res translations.xlsx --mode partial
+   ```
    
 
 ### 参数说明
+```
 positional arguments:
-  1. res_dir     资源目录路径（直接指定 Android 项目下的 res 目录路径）
-  2. excel_file  Excel文件路径
+  res_dir               资源目录路径（包含 values/values-xx 的文件夹）
+  excel_file            Excel文件路径（输入/输出）
 
-options:
-  1. -h, --help  show this help message and exit
-  2. --export    导出到Excel
-  3. --import    从Excel导入
+optional arguments:
+  -h, --help            show this help message and exit
+  --export              导出到Excel（生成完整翻译表和未翻译项表）
+  --import              从Excel导入（需配合 --mode 选择数据源, 支持两种模式）
+  --mode {full,partial}
+                        
+                        导入模式选择：                      
+                          full - 从主表(All Translations)导入（默认）
+                          partial - 仅从未翻译表(Untranslated)导入
+```                          
+
 
 ### 安装 openpyxl
 ```
