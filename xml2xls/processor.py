@@ -27,10 +27,10 @@ python3 processor.py --import res_dir translations.xlsx --mode [full|partial]
 1. 导出所有翻译（含未翻译项）：
 python3 processor.py --export app/src/main/res translations.xlsx
 
-2. 导入完整翻译表：
+2. 导入完整翻译表（All Translations）数据：
 python3 processor.py --import app/src/main/res translations.xlsx --mode full
 
-3. 仅导入未翻译项：
+3. 仅导入未翻译表（Untranslated）数据：
 python3 processor.py --import app/src/main/res translations.xlsx --mode partial
 
 """
@@ -281,10 +281,10 @@ Android字符串资源处理器
   1. 导出所有翻译（含未翻译项）：
      python3 processor.py --export app/src/main/res translations.xlsx
 
-  2. 导入完整翻译表：
+  2. 导入完整翻译表（All Translations）数据：
      python3 processor.py --import app/src/main/res translations.xlsx --mode full
 
-  3. 仅导入未翻译项：
+  3. 仅导入未翻译表（Untranslated）数据：
      python3 processor.py --import app/src/main/res translations.xlsx --mode partial
         '''
     )
