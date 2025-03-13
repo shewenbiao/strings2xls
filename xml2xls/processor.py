@@ -90,7 +90,7 @@ def import_from_excel(res_dir, input_file):
 
 
 def parse_strings_xml(xml_path):
-    """高精度解析器，保留完整原始内容"""
+    """解析XML获取原始内容（保留CDATA等特殊格式）"""
     order = []
     strings = {}
     if not os.path.exists(xml_path):
@@ -99,45 +99,93 @@ def parse_strings_xml(xml_path):
     with open(xml_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # 匹配完整字符串内容（包含CDATA和普通标签）
+    # 增强型正则表达式，匹配完整字符串定义
     pattern = re.compile(
-        r'<string\s+name="([^"]+)">(.*?)</string>',
+        r'<!--(.*?)-->|'  # 匹配注释
+        r'<string\s+name="([^"]+)"\s*>(.*?)</string>|'
+        r'(</?resources>)',  # 匹配根标签
         re.DOTALL
     )
 
     for match in re.finditer(pattern, content):
-        name = match.group(1)
-        raw_value = match.group(2).strip()
-
-        # 保留完整的原始内容
-        strings[name] = raw_value
-        order.append(name)
+        if match.group(1):  # 注释
+            continue
+        elif match.group(2):  # string标签
+            name = match.group(2)
+            value = match.group(3).strip()
+            order.append(name)
+            strings[name] = value
+        elif match.group(4):  # resources标签
+            continue  # 根标签不处理
 
     return order, strings
 
 
 def write_strings_xml(xml_path, data):
-    """写入XML时保留原始格式"""
+    """智能合并写入XML（保留注释等其他内容）"""
+    # 读取原始文件内容
+    if os.path.exists(xml_path):
+        with open(xml_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    else:
+        content = '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n</resources>'
+
+    # 获取现有字符串和顺序
+    existing_order, existing_data = parse_strings_xml(xml_path)
+
+    # 合并数据：更新现有值，保留未修改内容
+    merged_data = existing_data.copy()
+    merged_data.update(data)
+    new_order = existing_order + [k for k in data if k not in existing_order]
+
+    # 构建替换字典（包含原始格式）
+    replace_dict = {}
+    for match in re.finditer(r'<string\s+name="([^"]+)"\s*>(.*?)</string>', content, re.DOTALL):
+        name = match.group(1)
+        if name in merged_data:
+            old_content = match.group(0)
+            new_content = f'<string name="{name}">{merged_data[name]}</string>'
+            replace_dict[old_content] = new_content
+
+    # 执行替换
+    for old, new in replace_dict.items():
+        content = content.replace(old, new, 1)
+
+    # 添加新条目（追加到文件末尾前）
+    new_entries = []
+    for name in new_order:
+        if name not in existing_data:
+            new_entries.append(f'    <string name="{name}">{data[name]}</string>')
+
+    if new_entries:
+        # 在最后一个</string>后或</resources>前插入
+        # 查找最后一个</string>的结束位置
+        last_string_end = 0
+        last_string_pos = content.rfind('</string>')
+        if last_string_pos != -1:
+            last_string_end = last_string_pos + len('</string>')
+
+        # 查找</resources>的位置
+        resources_end_pos = content.find('</resources>')
+
+        # 确定插入位置（优先插入在最后一个</string>之后）
+        insert_pos = last_string_end if last_string_end > 0 else resources_end_pos
+
+        # 构建插入文本（包含换行格式）
+        insert_text = '\n' + '\n'.join(f'{entry}' for entry in new_entries)
+
+        # 执行插入（在插入位置后添加内容）
+        content = content[:insert_pos] + insert_text + content[insert_pos:]
+
+    # 处理xliff命名空间
+    if 'xliff:' in content and 'xmlns:xliff' not in content:
+        content = content.replace('<resources>',
+                                  '<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">', 1)
+
+    # 写入文件（保留原始格式）
     os.makedirs(os.path.dirname(xml_path), exist_ok=True)
-
-    # 检测是否需要 xliff 命名空间
-    has_xliff = any(re.search(r'<xliff:', str(v)) for v in data.values())
-
-    # 构建XML头
     with open(xml_path, 'w', encoding='utf-8') as f:
-        # 添加命名空间声明
-        ns_decl = ''
-        if has_xliff:
-            ns_decl = ' xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2"'
-
-        f.write(f'<?xml version="1.0" encoding="utf-8"?>\n')
-        f.write(f'<resources{ns_decl}>\n')
-
-        for name, value in data.items():
-            line = f'    <string name="{name}">{value}</string>'
-            f.write(line + '\n')
-
-        f.write('</resources>')
+        f.write(content)
 
 
 """
