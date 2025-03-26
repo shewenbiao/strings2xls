@@ -249,7 +249,7 @@ def write_strings_xml(xml_path, data):
         insert_pos = last_string_end if last_string_end > 0 else resources_end_pos
 
         # 构建插入文本（包含换行格式）
-        insert_text = '\n' + '\n'.join(f'{entry}' for entry in new_entries)
+        insert_text = '\n'.join(f'{entry}' for entry in new_entries) + '\n'
 
         # 执行插入（在插入位置后添加内容）
         content = content[:insert_pos] + insert_text + content[insert_pos:]
