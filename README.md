@@ -1,7 +1,7 @@
 # strings2xls
 Python command line tool for conversion between android strings.xml files and excel files.
 
-## 最新脚本(更新日期：2025/03/13)：processor.py
+## 最新脚本(更新日期：2025/03/26)：processor.py
 
 ### Change log
 1. 该脚本使用起来更方便。导出和导入使用这一个脚本即可。
