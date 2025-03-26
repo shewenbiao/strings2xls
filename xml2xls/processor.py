@@ -128,7 +128,10 @@ def import_from_excel(res_dir, input_file, mode='full'):
                 for idx, lang_code in enumerate(all_lang_codes, start=1):
                     cell = row[idx]
                     if cell.value:
-                        lang_data.setdefault(lang_code, {})[key] = str(cell.value).strip()
+                        value = str(cell.value).strip()
+                        # 进行XML特殊字符处理
+                        value = escape_xml_chars(value)
+                        lang_data.setdefault(lang_code, {})[key] = value
         else:
             # 处理主表
             if 'All Translations' not in wb.sheetnames:
@@ -146,7 +149,10 @@ def import_from_excel(res_dir, input_file, mode='full'):
                 for idx, lc in enumerate(lang_codes, start=1):
                     value = row[idx].value
                     if value:
-                        lang_data.setdefault(lc, {})[key] = str(value).strip()
+                        value = str(value).strip()
+                        # 进行XML特殊字符处理
+                        value = escape_xml_chars(value)
+                        lang_data.setdefault(lc, {})[key] = value
 
         # 写入各语言文件
         for lang_code, data in lang_data.items():
@@ -164,6 +170,31 @@ def import_from_excel(res_dir, input_file, mode='full'):
     except Exception as e:
         print(f"导入失败：{str(e)}")
         raise
+
+
+def escape_xml_chars(text):
+    """处理XML特殊字符，如单引号和&符号"""
+    if not text:
+        return text
+    
+    # 处理&字符（仅处理未转义的&）
+    # 先替换已有的实体引用以避免重复转义
+    # 临时标记已有的实体引用
+    text = re.sub(r'&(amp|lt|gt|apos|quot|#\d+);', r'###ENTITY###\1;', text)
+    # 转义其余的&
+    text = text.replace('&', '&amp;')
+    # 还原已有的实体引用
+    text = text.replace('###ENTITY###', '&')
+    
+    # 处理单引号（如果未被转义）
+    # 查找已经转义的单引号（\'）并临时替换
+    text = re.sub(r'\\\'', r'###APOS###', text)
+    # 转义未转义的单引号
+    text = text.replace("'", "\\'")
+    # 还原临时替换的已转义单引号
+    text = text.replace('###APOS###', "\\'")
+    
+    return text
 
 
 def parse_strings_xml(xml_path):
