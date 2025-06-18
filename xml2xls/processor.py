@@ -47,10 +47,12 @@ def export_to_excel(res_dir, output_file):
         lang_codes = []
         for d in os.listdir(res_dir):
             if d.startswith('values-'):
-                lang_code = d.replace('values-', '', 1)
-                _, lang_data = parse_strings_xml(os.path.join(res_dir, d, 'strings.xml'))
-                all_langs[lang_code] = lang_data
-                lang_codes.append(lang_code)
+                potential_strings_xml_path = os.path.join(res_dir, d, 'strings.xml')
+                if os.path.exists(potential_strings_xml_path):
+                    lang_code = d.replace('values-', '', 1)
+                    _, lang_data = parse_strings_xml(potential_strings_xml_path)
+                    all_langs[lang_code] = lang_data
+                    lang_codes.append(lang_code)
 
         # 创建Excel文件
         wb = Workbook()
