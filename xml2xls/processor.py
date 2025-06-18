@@ -56,8 +56,7 @@ def export_to_excel(res_dir, output_file):
         wb = Workbook()
 
         # Sheet1: 完整翻译表
-        main_sheet = wb.active
-        main_sheet.title = "All Translations"
+        main_sheet = wb.create_sheet(title="All Translations", index=0)
         headers = ['key', 'en'] + lang_codes
         main_sheet.append(headers)
 
@@ -279,11 +278,22 @@ def write_strings_xml(xml_path, data):
         # 确定插入位置（优先插入在最后一个</string>之后）
         insert_pos = last_string_end if last_string_end > 0 else resources_end_pos
 
-        # 构建插入文本（包含换行格式）
-        insert_text = '\n'.join(f'{entry}' for entry in new_entries) + '\n'
+        # 构建要插入的文本块
+        # new_entries 中的每个条目已经包含了用于缩进的前导空格
+        insert_block = '\n'.join(new_entries) + '\n'
 
-        # 执行插入（在插入位置后添加内容）
-        content = content[:insert_pos] + insert_text + content[insert_pos:]
+        # 确定在插入新文本块之前是否需要添加换行符
+        prefix_for_new_block = "\n" # 默认情况下，在新块前添加换行符
+        if insert_pos == 0:
+            # 如果插入点在文件开头 (此逻辑中不太可能，但作为一种保护措施)
+            prefix_for_new_block = ""
+        elif content[insert_pos-1] == '\n':
+            # 如果插入点的前一个字符已经是换行符，则不需要额外的换行符
+            prefix_for_new_block = ""
+        # 其他情况 (insert_pos > 0 且 content[insert_pos-1] != '\n')，prefix_for_new_block 保持为 "\n"
+
+        # 执行插入
+        content = content[:insert_pos] + prefix_for_new_block + insert_block + content[insert_pos:]
 
     # 处理xliff命名空间
     if 'xliff:' in content and 'xmlns:xliff' not in content:
