@@ -3,6 +3,10 @@ import json
 import argparse
 import pandas as pd
 
+"""
+该脚本是针对使用第三方库 https://github.com/aissat/easy_localization 进行国际化的 Flutter 项目
+"""
+
 # Flutter 项目中 国际化文案 文件所在的目录，相对于脚本执行位置
 DEFAULT_TRANSLATIONS_DIR = 'assets/translations'
 # 默认的模板语言文件名
@@ -88,13 +92,81 @@ def export_translations(translations_dir, output_file):
     # 4. 保存到文件
     try:
         if output_file.endswith('.xlsx'):
-            df.to_excel(output_file, index=False)
+            # 对于 Excel 文件，需要特殊处理以在第一行添加注意事项
+            from openpyxl import Workbook
+            from openpyxl.utils.dataframe import dataframe_to_rows
+            from openpyxl.styles import Font, PatternFill
+            
+            # 创建工作簿和工作表
+            wb = Workbook()
+            ws = wb.active
+            
+            # 在第一行第一列添加翻译注意事项
+            notice_text = "请注意：文案中有 {}包裹的内容不能被翻译。比如： By continuing, you agree to our {userAgreement}, {privacyPolicy} and {communityGuidelines}. 其中{userAgreement} {privacyPolicy} {communityGuidelines} 是占位符，在其他语言下需要保持原样，不能被翻译。"
+            
+            # 先添加 DataFrame 数据（包括表头）从第二行开始
+            for r_idx, row in enumerate(dataframe_to_rows(df, index=False, header=True), 2):
+                for c_idx, value in enumerate(row, 1):
+                    ws.cell(row=r_idx, column=c_idx, value=value)
+            
+            # 设置注意事项文本和样式
+            ws['A1'] = notice_text
+            
+            # 设置第一行第一列的字体为红色和粗体，并添加浅灰色背景
+            red_font = Font(color="FF0000", bold=True, size=11)
+            light_gray_fill = PatternFill(start_color="F5F5F5", end_color="F5F5F5", fill_type="solid")
+            
+            ws['A1'].font = red_font
+            ws['A1'].fill = light_gray_fill
+            
+            # 调整列宽以适应长文本
+            ws.column_dimensions['A'].width = 80
+            
+            # 保存工作簿
+            wb.save(output_file)
         elif output_file.endswith('.csv'):
-            df.to_csv(output_file, index=False, encoding='utf-8-sig')  # utf-8-sig for Excel compatibility with CSV
+            # 对于 CSV 文件，先写入注意事项，再写入数据
+            notice_text = "请注意：文案中有 {}包裹的内容不能被翻译。比如： By continuing, you agree to our {userAgreement}, {privacyPolicy} and {communityGuidelines}. 其中{userAgreement} {privacyPolicy} {communityGuidelines} 是占位符，在其他语言下需要保持原样，不能被翻译。"
+            
+            with open(output_file, 'w', encoding='utf-8-sig', newline='') as f:
+                # 写入注意事项作为第一行
+                f.write(f'"{notice_text}"\n')
+                # 写入 DataFrame 数据
+                df.to_csv(f, index=False, header=True)
         else:
             print(f"Error: Unsupported output file format. Please use .xlsx or .csv. Defaulting to .xlsx")
-            df.to_excel(output_file + '.xlsx' if '.' not in output_file else output_file.split('.')[0] + '.xlsx',
-                        index=False)
+            # 默认使用 xlsx 格式
+            output_file_xlsx = output_file + '.xlsx' if '.' not in output_file else output_file.split('.')[0] + '.xlsx'
+            
+            from openpyxl import Workbook
+            from openpyxl.utils.dataframe import dataframe_to_rows
+            from openpyxl.styles import Font, PatternFill
+            
+            wb = Workbook()
+            ws = wb.active
+            
+            notice_text = "请注意：文案中有 {}包裹的内容不能被翻译。比如： By continuing, you agree to our {userAgreement}, {privacyPolicy} and {communityGuidelines}. 其中{userAgreement} {privacyPolicy} {communityGuidelines} 是占位符，在其他语言下需要保持原样，不能被翻译。"
+            
+            # 先添加 DataFrame 数据（包括表头）从第二行开始
+            for r_idx, row in enumerate(dataframe_to_rows(df, index=False, header=True), 2):
+                for c_idx, value in enumerate(row, 1):
+                    ws.cell(row=r_idx, column=c_idx, value=value)
+            
+            # 设置注意事项文本和样式
+            ws['A1'] = notice_text
+            
+            # 设置第一行第一列的字体为红色和粗体，并添加浅灰色背景
+            red_font = Font(color="FF0000", bold=True, size=11)
+            light_gray_fill = PatternFill(start_color="F5F5F5", end_color="F5F5F5", fill_type="solid")
+            
+            ws['A1'].font = red_font
+            ws['A1'].fill = light_gray_fill
+            
+            # 调整列宽以适应长文本
+            ws.column_dimensions['A'].width = 80
+            
+            wb.save(output_file_xlsx)
+            
         print(f"Translations successfully exported to {output_file}")
     except Exception as e:
         print(f"Error writing to output file {output_file}: {e}")
@@ -115,9 +187,11 @@ def import_translations(input_file, translations_dir):
     # 1. 读取表格数据
     try:
         if input_file.endswith('.xlsx'):
-            df = pd.read_excel(input_file)
+            # 跳过第一行（注意事项），从第二行开始读取数据
+            df = pd.read_excel(input_file, skiprows=1)
         elif input_file.endswith('.csv'):
-            df = pd.read_csv(input_file)
+            # 跳过第一行（注意事项），从第二行开始读取数据
+            df = pd.read_csv(input_file, skiprows=1)
         else:
             print(f"Error: Unsupported input file format. Please use .xlsx or .csv.")
             return
