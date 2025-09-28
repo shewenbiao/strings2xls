@@ -96,38 +96,38 @@ def export_translations(translations_dir, output_file):
             from openpyxl import Workbook
             from openpyxl.utils.dataframe import dataframe_to_rows
             from openpyxl.styles import Font, PatternFill
-            
+
             # 创建工作簿和工作表
             wb = Workbook()
             ws = wb.active
-            
+
             # 在第一行第一列添加翻译注意事项
             notice_text = "请注意：文案中有 {}包裹的内容不能被翻译。比如： By continuing, you agree to our {userAgreement}, {privacyPolicy} and {communityGuidelines}. 其中{userAgreement} {privacyPolicy} {communityGuidelines} 是占位符，在其他语言下需要保持原样，不能被翻译。"
-            
+
             # 先添加 DataFrame 数据（包括表头）从第二行开始
             for r_idx, row in enumerate(dataframe_to_rows(df, index=False, header=True), 2):
                 for c_idx, value in enumerate(row, 1):
                     ws.cell(row=r_idx, column=c_idx, value=value)
-            
+
             # 设置注意事项文本和样式
             ws['A1'] = notice_text
-            
+
             # 设置第一行第一列的字体为红色和粗体，并添加浅灰色背景
             red_font = Font(color="FF0000", bold=True, size=11)
             light_gray_fill = PatternFill(start_color="F5F5F5", end_color="F5F5F5", fill_type="solid")
-            
+
             ws['A1'].font = red_font
             ws['A1'].fill = light_gray_fill
-            
+
             # 调整列宽以适应长文本
             ws.column_dimensions['A'].width = 80
-            
+
             # 保存工作簿
             wb.save(output_file)
         elif output_file.endswith('.csv'):
             # 对于 CSV 文件，先写入注意事项，再写入数据
             notice_text = "请注意：文案中有 {}包裹的内容不能被翻译。比如： By continuing, you agree to our {userAgreement}, {privacyPolicy} and {communityGuidelines}. 其中{userAgreement} {privacyPolicy} {communityGuidelines} 是占位符，在其他语言下需要保持原样，不能被翻译。"
-            
+
             with open(output_file, 'w', encoding='utf-8-sig', newline='') as f:
                 # 写入注意事项作为第一行
                 f.write(f'"{notice_text}"\n')
@@ -137,36 +137,36 @@ def export_translations(translations_dir, output_file):
             print(f"Error: Unsupported output file format. Please use .xlsx or .csv. Defaulting to .xlsx")
             # 默认使用 xlsx 格式
             output_file_xlsx = output_file + '.xlsx' if '.' not in output_file else output_file.split('.')[0] + '.xlsx'
-            
+
             from openpyxl import Workbook
             from openpyxl.utils.dataframe import dataframe_to_rows
             from openpyxl.styles import Font, PatternFill
-            
+
             wb = Workbook()
             ws = wb.active
-            
+
             notice_text = "请注意：文案中有 {}包裹的内容不能被翻译。比如： By continuing, you agree to our {userAgreement}, {privacyPolicy} and {communityGuidelines}. 其中{userAgreement} {privacyPolicy} {communityGuidelines} 是占位符，在其他语言下需要保持原样，不能被翻译。"
-            
+
             # 先添加 DataFrame 数据（包括表头）从第二行开始
             for r_idx, row in enumerate(dataframe_to_rows(df, index=False, header=True), 2):
                 for c_idx, value in enumerate(row, 1):
                     ws.cell(row=r_idx, column=c_idx, value=value)
-            
+
             # 设置注意事项文本和样式
             ws['A1'] = notice_text
-            
+
             # 设置第一行第一列的字体为红色和粗体，并添加浅灰色背景
             red_font = Font(color="FF0000", bold=True, size=11)
             light_gray_fill = PatternFill(start_color="F5F5F5", end_color="F5F5F5", fill_type="solid")
-            
+
             ws['A1'].font = red_font
             ws['A1'].fill = light_gray_fill
-            
+
             # 调整列宽以适应长文本
             ws.column_dimensions['A'].width = 80
-            
+
             wb.save(output_file_xlsx)
-            
+
         print(f"Translations successfully exported to {output_file}")
     except Exception as e:
         print(f"Error writing to output file {output_file}: {e}")
@@ -238,17 +238,28 @@ def import_translations(input_file, translations_dir):
             else:
                 # 尝试将字符串解析为 JSON 对象
                 if isinstance(translation_value, str):
+                    # 首先处理转义字符，将 \\n 转换回 \n，\\t 转换回 \t 等
+                    # 这里需要小心处理，只处理常见的转义字符
+                    processed_value = translation_value.replace('\\n', '\n').replace('\\t', '\t').replace('\\r', '\r')
+
                     try:
                         # 只有当字符串看起来像一个JSON对象或数组时才尝试解析
-                        if (translation_value.strip().startswith('{') and translation_value.strip().endswith('}')) or \
-                                (translation_value.strip().startswith('[') and translation_value.strip().endswith(']')):
-                            parsed_json = json.loads(translation_value)
-                            translations[key] = parsed_json
+                        stripped_value = processed_value.strip()
+                        if (stripped_value.startswith('{') and stripped_value.endswith('}')) or \
+                                (stripped_value.startswith('[') and stripped_value.endswith(']')):
+                            # 进一步验证：尝试解析，如果成功且结果是dict或list，则使用解析结果
+                            parsed_json = json.loads(processed_value)
+                            if isinstance(parsed_json, (dict, list)):
+                                translations[key] = parsed_json
+                            else:
+                                # 如果解析结果不是dict或list，说明这是一个普通字符串
+                                translations[key] = processed_value
                         else:
-                            translations[key] = str(translation_value)
+                            # 普通字符串，使用处理过转义字符的值
+                            translations[key] = processed_value
                     except json.JSONDecodeError:
-                        # 如果解析失败，则保持为字符串
-                        translations[key] = str(translation_value)
+                        # 如果解析失败，则使用处理过转义字符的字符串
+                        translations[key] = processed_value
                 else:
                     # 如果不是字符串（例如，已经是数字或布尔值），直接使用
                     translations[key] = translation_value
