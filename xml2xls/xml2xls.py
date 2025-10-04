@@ -84,23 +84,34 @@ def read_xml3(path):
         return None, None
 
     file = open(path)
-    soup = BeautifulSoup(file, 'lxml')
+    soup = BeautifulSoup(file, 'html.parser')
+    # lxml
     strings = soup.findAll('string')
     keys = []
     values = []
     for string in strings:
         key = string.get('name')
         # value = string.string 如果包含多个子标签， 结果返回None
-        value = del_content_blank(string.get_text().strip())
+        keyname = r'<string.*?name="'+key+r'.*?">(.*?)</string>'
+        # value = del_content_blank(keyname,string.gette().strip())
+        value = del_content_blank(keyname, string)
         keys.append(key)
         values.append(value)
     file.close()
     return keys, values
 
 
-def del_content_blank(s):
-    clean_str = re.sub(r'\n| {8}', ' ', str(s))
-    return clean_str.replace('  ', ' ')
+def del_content_blank(name, value):
+    # clean_str = re.sub(r'\n| {8}', ' ', str(value))
+    text_list = re.findall(name, str(value).replace('\n', ''))
+    # print(text_list)
+    if len(text_list) == 0:
+        print(name+'error')
+        return ''
+    else:
+        clean_str = text_list[0]
+        clean_str.replace('&gt', "")
+        return clean_str.replace('  ', ' ')
 
 
 def get_country_code(dir_name):
@@ -120,7 +131,8 @@ def get_dest_dir(target_dir, option):
         dir = 'multiple_files'
     else:
         dir = 'multiple_files_no_translate'
-    dest_dir = target_dir + "/xml2xls/" + dir + '/' + time.strftime("%Y%m%d_%H%M%S")
+    dest_dir = target_dir + "/xml2xls/" + dir + \
+        '/' + time.strftime("%Y%m%d_%H%M%S")
     if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
     return dest_dir
@@ -156,7 +168,8 @@ def convert_to_multiple_files(file_dir, target_dir):
                     ws.write(x + 1, 0, key)
                     ws.write(x + 1, 1, value)
                 workbook.save(dest_file_path)
-                print("Convert %s successfully! you can see xls file in %s" % (path, dest_dir))
+                print("Convert %s successfully! you can see xls file in %s" %
+                      (path, dest_dir))
 
 
 def convert_to_single_file_with_one_sheet(file_dir, target_dir):
@@ -199,7 +212,8 @@ def convert_to_single_file_with_one_sheet(file_dir, target_dir):
                             if key == key2:
                                 value = values[x]
                                 ws.write(x2 + 1, index + 1, value)
-                print("Convert %s successfully! you can see xls file in %s" % (xml_file_path, dest_dir))
+                print("Convert %s successfully! you can see xls file in %s" %
+                      (xml_file_path, dest_dir))
                 index += 1
         workbook.save(dest_file_path)
 
@@ -232,7 +246,8 @@ def convert_to_single_file_with_multiple_sheets(file_dir, target_dir):
                     value = values[x]
                     ws.write(x + 1, 0, key)
                     ws.write(x + 1, 1, value)
-                print("Convert %s successfully! you can see xls file in %s" % (path, dest_dir))
+                print("Convert %s successfully! you can see xls file in %s" %
+                      (path, dest_dir))
     workbook.save(dest_file_path)
 
 
@@ -259,7 +274,8 @@ def convert_to_multiple_files_no_translate(file_dir, target_dir):
                 print("Start converting %s" % country_code)
                 print('Translated Count: %s' % len(keys))
 
-                file_name = xml_file.replace(".xml", "_no_translate_to_" + country_code)
+                file_name = xml_file.replace(
+                    ".xml", "_no_translate_to_" + country_code)
                 sheet_name = file_name
                 dest_file_path = dest_dir + "/" + file_name + ".xls"
                 if not os.path.exists(dest_file_path):
@@ -277,7 +293,8 @@ def convert_to_multiple_files_no_translate(file_dir, target_dir):
                             index += 1
                     workbook.save(dest_file_path)
                     print("Untranslated Count: %s" % index)
-                    print("Convert %s successfully! you can see xls file in %s" % (path, dest_dir))
+                    print("Convert %s successfully! you can see xls file in %s" % (
+                        path, dest_dir))
 
 
 def add_parser():
@@ -340,7 +357,8 @@ def start_convert(options):
         convert_to_multiple_files(file_dir, target_dir)
         convert_to_multiple_files_no_translate(file_dir, target_dir)
     else:
-        Log().error('Invalid value %s , -e only for values 1, 2, 3, 4, 5' % options.excelStorageForm)
+        Log().error('Invalid value %s , -e only for values 1, 2, 3, 4, 5' %
+                    options.excelStorageForm)
 
 
 def main():
