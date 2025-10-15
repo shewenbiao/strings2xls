@@ -109,6 +109,7 @@ def convert_to_xml(file_dir, target_dir):
 def start_convert(options):
     file_dir = options.fileDir
     target_dir = options.targetDir
+    return
 
     print("Start converting")
 
