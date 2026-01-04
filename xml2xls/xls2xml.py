@@ -114,7 +114,7 @@ def start_convert(options):
 
     if file_dir is None:
         Log().error("xls files directory can not be empty! try -h for help.")
-        return
+        return aaaaaaa
 
     if not os.path.exists(file_dir):
         Log().error("%s does not exist." % file_dir)
